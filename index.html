@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Tap Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #instructions, #average-time {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #game-board {
+            display: flex;
+            flex-wrap: wrap;
+            width: 300px;
+            height: 300px;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        .shape {
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .circle { border-radius: 50%; background-color: lightblue; }
+        .square { background-color: lightcoral; }
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 45px solid transparent;
+            border-right: 45px solid transparent;
+            border-bottom: 90px solid lightgreen;
+        }
+        .oval { border-radius: 50% / 100%; background-color: lightyellow; }
+    </style>
+</head>
+<body>
+    <button id="ready-btn">Ready?</button>
+    <div id="instructions" style="display: none;">正円だけをタップしろ</div>
+    <div id="game-board" style="display: none;"></div>
+    <div id="average-time"></div>
+    <script>
+        const readyBtn = document.getElementById('ready-btn');
+        const instructions = document.getElementById('instructions');
+        const gameBoard = document.getElementById('game-board');
+        const averageTime = document.getElementById('average-time');
+        let startTime;
+        let reactionTimes = [];
+        let trialCount = 0;
+        const totalTrials = 20;
+
+        readyBtn.addEventListener('click', startGame);
+
+        function startGame() {
+            readyBtn.style.display = 'none';
+            instructions.style.display = 'block';
+            setTimeout(() => {
+                instructions.style.display = 'none';
+                startTrial();
+            }, 5000);
+        }
+
+        function startTrial() {
+            if (trialCount < totalTrials) {
+                gameBoard.innerHTML = '';
+                gameBoard.style.display = 'flex';
+                createShapes();
+                startTime = Date.now();
+            } else {
+                gameBoard.style.display = 'none';
+                showAverageTime();
+            }
+        }
+
+        function createShapes() {
+            const shapes = ['circle', 'square', 'triangle', 'oval'];
+            for (let i = 0; i < 9; i++) {
+                const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
+                const shape = document.createElement('div');
+                shape.classList.add('shape', shapeType);
+                shape.addEventListener('click', handleShapeClick);
+                gameBoard.appendChild(shape);
+            }
+        }
+
+        function handleShapeClick(event) {
+            const shape = event.target;
+            const isCircle = shape.classList.contains('circle');
+            if (isCircle) {
+                const reactionTime = Date.now() - startTime;
+                reactionTimes.push(reactionTime);
+                trialCount++;
+                startTrial();
+            }
+        }
+
+        function showAverageTime() {
+            const sum = reactionTimes.reduce((a, b) => a + b, 0);
+            const avg = sum / reactionTimes.length;
+            averageTime.textContent = `Average Reaction Time: ${avg.toFixed(2)} ms`;
+        }
+    </script>
+</body>
+</html>
