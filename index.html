@@ -14,51 +14,61 @@
             height: 100vh;
             margin: 0;
         }
+        #instructions, #average-time, #results {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
         #game-board {
-            display: none;
-            flex-direction: column;
+            display: flex;
+            flex-wrap: wrap;
+            width: 300px;
+            height: 300px;
+            gap: 10px;
+            justify-content: center;
             align-items: center;
         }
         .shape {
-            width: 100px;
-            height: 100px;
-            margin: 10px;
+            width: 90px;
+            height: 90px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
             cursor: pointer;
         }
-        .circle {
-            background-color: lightblue;
-            border-radius: 50%;
-        }
-        .square {
-            background-color: lightgreen;
-        }
+        .circle { border-radius: 50%; background-color: lightblue; }
+        .square { background-color: lightcoral; }
         .triangle {
             width: 0;
             height: 0;
-            border-left: 50px solid transparent;
-            border-right: 50px solid transparent;
-            border-bottom: 100px solid lightcoral;
+            border-left: 45px solid transparent;
+            border-right: 45px solid transparent;
+            border-bottom: 90px solid lightgreen;
         }
         .diamond {
             width: 0;
             height: 0;
             border: 50px solid transparent;
-            border-top: 50px solid yellow;
+            border-bottom: 70px solid lightyellow;
             position: relative;
-            top: -50px;
+            top: -20px;
+        }
+        .diamond:after {
+            content: '';
+            position: absolute;
+            top: 70px;
+            left: -50px;
+            width: 0;
+            height: 0;
+            border: 50px solid transparent;
+            border-top: 70px solid lightyellow;
         }
     </style>
 </head>
 <body>
     <button id="ready-btn">Ready?</button>
-    <div id="game-board">
-        <p id="instruction">Tap only the circle</p>
-        <div id="shape-container"></div>
-    </div>
+    <div id="instructions" style="display: none;">Tap only the circle</div>
+    <div id="game-board" style="display: none;"></div>
     <div id="results" style="display: none;">
         <p id="correct-count"></p>
         <p id="incorrect-count"></p>
@@ -66,70 +76,73 @@
     </div>
     <script>
         const readyBtn = document.getElementById('ready-btn');
+        const instructions = document.getElementById('instructions');
         const gameBoard = document.getElementById('game-board');
-        const instruction = document.getElementById('instruction');
-        const shapeContainer = document.getElementById('shape-container');
         const results = document.getElementById('results');
         const correctCount = document.getElementById('correct-count');
         const incorrectCount = document.getElementById('incorrect-count');
         const averageTime = document.getElementById('average-time');
 
-        let shapes = ['circle', 'square', 'triangle', 'diamond'];
+        let startTime;
+        let reactionTimes = [];
+        let trialCount = 0;
+        const totalTrials = 20;
         let correctResponses = 0;
         let incorrectResponses = 0;
-        let reactionTimes = [];
-        let currentShape;
-        let startTime;
 
-        readyBtn.addEventListener('click', () => {
-            readyBtn.style.display = 'none';
-            instruction.style.display = 'block';
-            setTimeout(startGame, 5000);
-        });
+        readyBtn.addEventListener('click', startGame);
 
         function startGame() {
-            instruction.style.display = 'none';
-            gameBoard.style.display = 'flex';
-            displayNextShape();
+            readyBtn.style.display = 'none';
+            instructions.style.display = 'block';
+            setTimeout(() => {
+                instructions.style.display = 'none';
+                startTrial();
+            }, 5000);
         }
 
-        function displayNextShape() {
-            if (reactionTimes.length >= 20) {
-                endGame();
-                return;
+        function startTrial() {
+            if (trialCount < totalTrials) {
+                gameBoard.innerHTML = '';
+                gameBoard.style.display = 'flex';
+                createShapes();
+                startTime = Date.now();
+            } else {
+                gameBoard.style.display = 'none';
+                showResults();
             }
-
-            shapeContainer.innerHTML = '';
-            let shapeType = shapes[Math.floor(Math.random() * shapes.length)];
-            let shape = document.createElement('div');
-            shape.classList.add('shape', shapeType);
-            shapeContainer.appendChild(shape);
-            currentShape = shapeType;
-            startTime = new Date().getTime();
-
-            shape.addEventListener('click', () => handleShapeClick(shapeType));
         }
 
-        function handleShapeClick(shapeType) {
-            let endTime = new Date().getTime();
-            let reactionTime = endTime - startTime;
-            reactionTimes.push(reactionTime);
+        function createShapes() {
+            const shapes = ['circle', 'square', 'triangle', 'diamond'];
+            for (let i = 0; i < 9; i++) {
+                const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
+                const shape = document.createElement('div');
+                shape.classList.add('shape', shapeType);
+                shape.addEventListener('click', handleShapeClick);
+                gameBoard.appendChild(shape);
+            }
+        }
 
-            if (shapeType === 'circle') {
+        function handleShapeClick(event) {
+            const shape = event.target;
+            const isCircle = shape.classList.contains('circle');
+            if (isCircle) {
+                const reactionTime = Date.now() - startTime;
+                reactionTimes.push(reactionTime);
                 correctResponses++;
             } else {
                 incorrectResponses++;
             }
-
-            displayNextShape();
+            trialCount++;
+            startTrial();
         }
 
-        function endGame() {
-            gameBoard.style.display = 'none';
+        function showResults() {
             results.style.display = 'block';
             correctCount.textContent = `Correct responses: ${correctResponses}`;
             incorrectCount.textContent = `Incorrect responses: ${incorrectResponses}`;
-            let averageReactionTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
+            const averageReactionTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
             averageTime.textContent = `Average reaction time: ${averageReactionTime.toFixed(2)} ms`;
         }
     </script>
