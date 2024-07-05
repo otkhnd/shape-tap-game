@@ -14,7 +14,7 @@
             height: 100vh;
             margin: 0;
         }
-        #instructions, #average-time, #results {
+        #instructions, #average-time {
             font-size: 24px;
             margin-bottom: 20px;
         }
@@ -45,29 +45,12 @@
             border-right: 45px solid transparent;
             border-bottom: 90px solid lightgreen;
         }
-        .diamond {
-            width: 0;
-            height: 0;
-            border: 50px solid transparent;
-            border-bottom: 70px solid lightyellow;
-            position: relative;
-            top: -20px;
-        }
-        .diamond:after {
-            content: '';
-            position: absolute;
-            top: 70px;
-            left: -50px;
-            width: 0;
-            height: 0;
-            border: 50px solid transparent;
-            border-top: 70px solid lightyellow;
-        }
+        .oval { border-radius: 50% / 100%; background-color: lightyellow; }
     </style>
 </head>
 <body>
     <button id="ready-btn">Ready?</button>
-    <div id="instructions" style="display: none;">Tap only the circle</div>
+    <div id="instructions" style="display: none;">Tap only the circle quickly</div>
     <div id="game-board" style="display: none;"></div>
     <div id="results" style="display: none;">
         <p id="correct-count"></p>
@@ -82,13 +65,12 @@
         const correctCount = document.getElementById('correct-count');
         const incorrectCount = document.getElementById('incorrect-count');
         const averageTime = document.getElementById('average-time');
-
         let startTime;
         let reactionTimes = [];
-        let trialCount = 0;
-        const totalTrials = 20;
         let correctResponses = 0;
         let incorrectResponses = 0;
+        let trialCount = 0;
+        const totalTrials = 20;
 
         readyBtn.addEventListener('click', startGame);
 
@@ -114,7 +96,7 @@
         }
 
         function createShapes() {
-            const shapes = ['circle', 'square', 'triangle', 'diamond'];
+            const shapes = ['circle', 'square', 'triangle', 'oval'];
             for (let i = 0; i < 9; i++) {
                 const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
                 const shape = document.createElement('div');
@@ -127,9 +109,9 @@
         function handleShapeClick(event) {
             const shape = event.target;
             const isCircle = shape.classList.contains('circle');
+            const reactionTime = Date.now() - startTime;
+            reactionTimes.push(reactionTime);
             if (isCircle) {
-                const reactionTime = Date.now() - startTime;
-                reactionTimes.push(reactionTime);
                 correctResponses++;
             } else {
                 incorrectResponses++;
@@ -142,8 +124,9 @@
             results.style.display = 'block';
             correctCount.textContent = `Correct responses: ${correctResponses}`;
             incorrectCount.textContent = `Incorrect responses: ${incorrectResponses}`;
-            const averageReactionTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
-            averageTime.textContent = `Average reaction time: ${averageReactionTime.toFixed(2)} ms`;
+            const sum = reactionTimes.reduce((a, b) => a + b, 0);
+            const avg = sum / reactionTimes.length;
+            averageTime.textContent = `Average reaction time: ${avg.toFixed(2)} ms`;
         }
     </script>
 </body>
