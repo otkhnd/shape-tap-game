@@ -97,13 +97,26 @@
 
         function createShapes() {
             const shapes = ['circle', 'square', 'triangle'];
-            for (let i = 0; i < 9; i++) {
+            const shapeElements = [];
+            shapeElements.push(createShape('circle')); // Ensure at least one circle
+
+            for (let i = 1; i < 9; i++) {
                 const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
-                const shape = document.createElement('div');
-                shape.classList.add('shape', shapeType);
-                shape.addEventListener('click', handleShapeClick);
-                gameBoard.appendChild(shape);
+                shapeElements.push(createShape(shapeType));
             }
+
+            // Shuffle the shapes array
+            shapeElements.sort(() => Math.random() - 0.5);
+
+            // Append shapes to the game board
+            shapeElements.forEach(shape => gameBoard.appendChild(shape));
+        }
+
+        function createShape(type) {
+            const shape = document.createElement('div');
+            shape.classList.add('shape', type);
+            shape.addEventListener('click', handleShapeClick);
+            return shape;
         }
 
         function handleShapeClick(event) {
